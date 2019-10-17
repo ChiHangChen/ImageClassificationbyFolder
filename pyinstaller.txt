@@ -1,0 +1,2 @@
+cd C:\Users\ChiHang\Documents\GitHub\ImageClassificationbyFolder
+pyinstaller ImageClassificationbyFolder.spec
