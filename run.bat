@@ -1,5 +1,5 @@
 call C:/Users/ChiHang/Anaconda3/Scripts/activate.bat
 
-python BBoxReclassification.py
+python ImageClassificationbyFolder.py
 
 pause

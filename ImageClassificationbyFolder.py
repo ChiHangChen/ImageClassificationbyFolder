@@ -83,7 +83,6 @@ class mainProgram(QMainWindow, Ui_MainWindow):
                 self.imgnumber = 0
                 self.new_class = []
                 self.done_img_list = []
-                self.click_prev = False
                 self.path_click = True
                 bbox = self.read_img(self.image_list[self.imgnumber])
                 self.update_image(bbox)
@@ -94,14 +93,13 @@ class mainProgram(QMainWindow, Ui_MainWindow):
         if not pixmap.isNull():
             pixmap = pixmap.scaled(225, 450, Qt.KeepAspectRatio)
             self.img_qlabel.setPixmap(pixmap)
-            text = self.image_list[self.imgnumber]+"\n\n"+f"Current BBox : {self.imgnumber+1}/{len(self.image_list)}"
-            if self.click_prev:
-                text += f"\n\nClass of this BBox : {self.this_img_class}"
-            elif self.click_prev or self.imgnumber==0:
-                text += f"\n\nClass of previous BBox : No previous img!"
-            else:
-                text += f"\n\nClass of previous BBox : {self.new_class[-1]}"
-            text += f"\n\n{self.imgnumber} images haven't been saved"
+            split_imgName = self.image_list[self.imgnumber].split("-")
+            text = ""
+            text += f"Dataset name : {split_imgName[0]}"
+            text += f"\nImage name : {split_imgName[1]}.jpg"
+            text += f"\nBBox id : {split_imgName[2].replace('.jpg','')}"
+            text += "\n\n"+f"Current progress : {self.imgnumber+1}/{len(self.image_list)}"
+            text += f"\n{self.imgnumber} images haven't been saved"
             self.text_qlabel.setText(text)
             
     def keyPressEvent(self, event):
@@ -111,7 +109,6 @@ class mainProgram(QMainWindow, Ui_MainWindow):
     def on_key(self, event):
         current_window = GetWindowText(GetForegroundWindow())
         if current_window==desired_window:
-            self.click_prev = False
             self.new_class.append(keymap[event.key()])
             self.done_img_list.append(self.image_list[self.imgnumber])
             
@@ -130,10 +127,7 @@ class mainProgram(QMainWindow, Ui_MainWindow):
         if self.imgnumber==0:
             QMessageBox.information(self,"Warning", "No previous image!")
         else:
-            self.click_prev = True
             self.imgnumber -= 1
-            
-            self.this_img_class = self.new_class[-1]
             self.new_class = self.new_class[:-1]
             self.done_img_list = self.done_img_list[:-1]
             
