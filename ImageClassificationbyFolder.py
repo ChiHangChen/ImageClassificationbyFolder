@@ -113,18 +113,21 @@ class mainProgram(QMainWindow, Ui_MainWindow):
     def on_key(self, event):
         current_window = GetWindowText(GetForegroundWindow())
         if current_window==desired_window:
-            self.new_class.append(keymap[event.key()])
-            self.done_img_list.append(self.image_list[self.imgnumber])
-            
-            self.imgnumber += 1
-            
-            # If to the end, save and close program
-            if self.imgnumber==len(self.image_list):
-                self.to_the_end = True
-                self.save()
+            if event.key() in keymap:
+                self.new_class.append(keymap[event.key()])
+                self.done_img_list.append(self.image_list[self.imgnumber])
+                
+                self.imgnumber += 1
+                
+                # If to the end, save and close program
+                if self.imgnumber==len(self.image_list):
+                    self.to_the_end = True
+                    self.save()
+                else:
+                    bbox = self.read_img(self.image_list[self.imgnumber])
+                    self.update_image(bbox)
             else:
-                bbox = self.read_img(self.image_list[self.imgnumber])
-                self.update_image(bbox)
+                QMessageBox.information(self,"Warning", "Can not press special keys!")
                 
     def prev_image(self):
         if self.imgnumber==0:
