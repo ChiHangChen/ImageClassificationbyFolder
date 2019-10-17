@@ -64,14 +64,18 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             self.imgnumber = 0
             self.new_class = []
             self.done_img_list = []
-            self.click_prev = False
-            bbox = self.read_img(self.image_list[self.imgnumber])
-            self.update_image(bbox)            
-            QMessageBox.information(self, "Warning", "Image saved!")
+            if self.to_the_end:
+                QMessageBox.information(self, "Warning", "Job Done!")
+                sys.exit(app.exec_())
+            else:
+                bbox = self.read_img(self.image_list[self.imgnumber])
+                self.update_image(bbox)            
+                QMessageBox.information(self, "Warning", "Image saved!")
             
     # Done
     def select_path(self):
         path = QFileDialog.getExistingDirectory()
+        self.to_the_end = False
         if len(path) == 0:
             QMessageBox.information(self,"Warning", "Please select a valid path!")
         else:
@@ -116,9 +120,8 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             
             # If to the end, save and close program
             if self.imgnumber==len(self.image_list):
+                self.to_the_end = True
                 self.save()
-                QMessageBox.information(self, "Warning", "Image saved!")
-                sys.exit(app.exec_())
             else:
                 bbox = self.read_img(self.image_list[self.imgnumber])
                 self.update_image(bbox)
