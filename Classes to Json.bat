@@ -2,7 +2,7 @@
 '''
 @echo off
 echo Switch to python
-call C:/Users/ChiHang/Anaconda3/Scripts/activate.bat
+call C:/Users/%USERNAME%/Anaconda3/Scripts/activate.bat
 python "%~f0"
 pause
 exit /b

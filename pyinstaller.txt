@@ -1,2 +1,2 @@
-cd C:\Users\ChiHang\Documents\GitHub\ImageClassificationbyFolder
+cd C:\Users\%USERNAME%\Documents\GitHub\ImageClassificationbyFolder
 pyinstaller ImageClassificationbyFolder.spec
