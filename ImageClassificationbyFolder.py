@@ -97,11 +97,14 @@ class mainProgram(QMainWindow, Ui_MainWindow):
         if not pixmap.isNull():
             pixmap = pixmap.scaled(225, 450, Qt.KeepAspectRatio)
             self.img_qlabel.setPixmap(pixmap)
-            split_imgName = self.image_list[self.imgnumber].split("-")
-            text = ""
-            text += f"Dataset name : {split_imgName[0]}"
-            text += f"\nImage name : {split_imgName[1]}.jpg"
-            text += f"\nBBox id : {split_imgName[2].replace('.jpg','')}"
+            try : 
+                split_imgName = self.image_list[self.imgnumber].split("-")
+                text = ""
+                text += f"Dataset name : {split_imgName[0]}"
+                text += f"\nImage name : {split_imgName[1]}.jpg"
+                text += f"\nBBox id : {split_imgName[2].replace('.jpg','')}"
+            except:
+                text = "Filename : "+self.image_list[self.imgnumber]
             text += "\n\n"+f"Current progress : {self.imgnumber+1}/{len(self.image_list)}"
             text += f"\n{self.imgnumber} images haven't been saved"
             self.text_qlabel.setText(text)
