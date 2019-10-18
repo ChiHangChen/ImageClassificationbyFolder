@@ -1,7 +1,14 @@
 # **Introduction**
 A labeling tool for quick image classification.
+
 This tool can classify each image to its classes folder by simple press the keyboard.
+
 ***
+
+<p align="center">
+  <img src="img/readme2.gif" width = "934" height = "448" border="5">
+</p>
+
 
 ## **Something you need to now**
 The exe file can be downloaded from [here](https://github.com/ChiHangChen/ImageClassificationbyFolder/releases).
