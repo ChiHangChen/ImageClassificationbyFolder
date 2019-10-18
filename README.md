@@ -1,7 +1,7 @@
 # **Introduction**
 A labeling tool for quick image classification.
 
-This tool can classify each image to its classes folder by simple press the keyboard.
+This tool can classify each image to its classes folder by simply press the keyboard.
 
 ***
 
