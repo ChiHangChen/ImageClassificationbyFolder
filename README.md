@@ -7,7 +7,7 @@ A labeling tool for quick image classification.
 This tool can classify each image to its classes folder by simply press the keyboard.
 
 ***
-**Note : The following using structure may be a little different in v2.0.0.**
+**Note : The following using procedure may be a little different in v2.0.0.**
 <p align="center">
   <img src="img/readme2.gif" width = "934" height = "448" border="5">
 </p>
