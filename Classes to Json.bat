@@ -30,8 +30,8 @@ def dump_json(json_path,box_id,class_id):
         return True
     file_json.close()
     
-box_list = glob.glob("./Classes/**/*.jpg",recursive=True)
-print(f"Classes資料夾共{len(box_list)}個已分類Bounding Box圖片")
+box_list = glob.glob("./Cropped_box/**/*.jpg",recursive=True)
+print(f"Cropped_box資料夾共{len(box_list)}個已分類的Bounding Box Image")
 print("正在合併Bounding Box類別至Json...")
 for count,i in enumerate(box_list):
     class_ = os.path.basename(os.path.dirname(i))

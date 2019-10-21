@@ -12,7 +12,7 @@ import numpy as np
 import os, glob, io 
 from PIL import Image
 import json
-os.chdir("E:\\Direction_20191018")
+
 json_list = glob.glob("./**/*.json",recursive=True)
 
 def read_labelme_json(json_path):
@@ -51,8 +51,10 @@ for i in json_list:
         img_path = dataset_name+"/"+json_content[0]
         img = np.array(Image.open(img_path))
         for count,b in enumerate(json_content[1]):
+            if not os.path.exists('./Cropped_box/'+b[0]):
+                os.mkdir('./Cropped_box/'+b[0])
             cropped_box = Image.fromarray(return_bboxImg(img,b))
-            cropped_box.save("cropped_box/"+dataset_name+"-"+json_content[0].split(".")[0]+"-"+str(count)+".jpg","JPEG")
+            cropped_box.save("cropped_box/"+b[0]+"/"+dataset_name+"-"+json_content[0].split(".")[0]+"-"+str(count)+".jpg","JPEG")
     except:
         print(f"Read Json failed : {i}")
         missing_count += 1

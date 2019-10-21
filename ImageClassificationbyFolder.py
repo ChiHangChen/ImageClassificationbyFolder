@@ -55,7 +55,7 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, "Warning", "No images need to be saved!")
         else:
             for im, c in zip(self.done_img_list, self.new_class):
-                output_path = ospath.dirname(getcwd())+"/Classes/"+c
+                output_path = ospath.dirname(getcwd())+"/"+c
                 if not ospath.exists(output_path):
                     makedirs(output_path)
                 move(im, output_path+"/"+ospath.basename(im))
