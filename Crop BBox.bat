@@ -9,12 +9,10 @@ exit /b
 rem ^
 '''
 import numpy as np
-import os, glob, shutil, io 
+import os, glob, io 
 from PIL import Image
 import json
-import matplotlib.pyplot as plt
-import cv2
-
+os.chdir("E:\\Direction_20191018")
 json_list = glob.glob("./**/*.json",recursive=True)
 
 def read_labelme_json(json_path):
@@ -47,10 +45,10 @@ print(f"共{len(json_list)}個Json file")
 print("正在裁剪圖片至Cropped_box資料夾....")
 missing_count = 0
 for i in json_list:
-    dataset_name = os.path.basename(os.path.dirname(i))
-    json_content = read_labelme_json(i)
-    img_path = dataset_name+"/"+json_content[0]
     try:
+        dataset_name = os.path.basename(os.path.dirname(i))
+        json_content = read_labelme_json(i)
+        img_path = dataset_name+"/"+json_content[0]
         img = np.array(Image.open(img_path))
         for count,b in enumerate(json_content[1]):
             cropped_box = Image.fromarray(return_bboxImg(img,b))
