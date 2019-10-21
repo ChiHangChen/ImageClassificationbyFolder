@@ -54,7 +54,7 @@ for i in json_list:
             cropped_box = Image.fromarray(return_bboxImg(img,b))
             cropped_box.save("cropped_box/"+dataset_name+"-"+json_content[0].split(".")[0]+"-"+str(count)+".jpg","JPEG")
     except:
-        print(f"Can not found image : {img_path}")
+        print(f"Read Json failed : {i}")
         missing_count += 1
 print("完成!")
 print(f"共{missing_count}張圖片遺失")
