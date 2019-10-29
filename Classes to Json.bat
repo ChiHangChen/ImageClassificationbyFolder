@@ -9,11 +9,8 @@ exit /b
 rem ^
 '''
 import numpy as np
-import os, glob, shutil, io 
-from PIL import Image
+import os, glob, shutil, io
 import json
-import matplotlib.pyplot as plt
-from IPython.display import clear_output
 from shutil import copyfile
 
 def dump_json(json_path,box_id,class_id):
@@ -22,7 +19,7 @@ def dump_json(json_path,box_id,class_id):
     except:
         print(f"Json file missing : {json_path}")
         return False
-    copyfile(json_path, os.path.dirname(os.path.dirname(json_path))+"/json_backup/"+os.path.basename(json_path))
+    copyfile(json_path, os.path.dirname(os.path.dirname(json_path))+"/json_backup/"+os.path.basename(os.path.dirname(json_path))+"_"+os.path.basename(json_path))
     json_data = file_json.read()
     data = json.loads(json_data)
     data['shapes'][int(box_id)]['label'] = class_id

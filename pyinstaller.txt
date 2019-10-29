@@ -1,3 +1,2 @@
 cd C:\Users\%USERNAME%\Documents\GitHub\ImageClassificationbyFolder
-activate exe
 pyinstaller ImageClassificationbyFolder.spec
