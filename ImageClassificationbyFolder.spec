@@ -20,6 +20,9 @@ a.datas += [ ('back.png', 'icon/back.png', 'DATA')]
 a.datas += [ ('main.ico', 'icon/main.ico', 'DATA')]
 a.datas += [ ('folder.png', 'icon/folder.png', 'DATA')]
 a.datas += [ ('download.png', 'icon/download.png', 'DATA')]
+a.datas += [ ('scissors.png', 'icon/scissors.png', 'DATA')]
+a.datas += [ ('paste.png', 'icon/paste.png', 'DATA')]
+
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)

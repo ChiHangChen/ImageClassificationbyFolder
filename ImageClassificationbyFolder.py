@@ -11,13 +11,18 @@ from PyQt5.QtCore import Qt, pyqtSignal, QEvent
 import sys
 from glob import glob
 from numpy import array as nparray
+from numpy import stack as npstack
 from PIL.Image import open as imopen
+from PIL.Image import fromarray as imfromarray
 from win32gui import GetWindowText, GetForegroundWindow
 from MainWindow import Ui_MainWindow, resource_path
 from qimage2ndarray import array2qimage
-from shutil import move
+from shutil import move, copyfile
 from os import makedirs, chdir, getcwd
 from os import path as ospath
+from io import open as iopen
+from json import loads as jsloads
+from json import dump as jsdump
 
 keymap = {}
 for key, value in vars(Qt).items():
@@ -29,14 +34,54 @@ for key, value in vars(Qt).items():
 
 desired_window = "Quick Classification"
 
+def read_labelme_json(json_path):
+    file_json = iopen(json_path,'r',encoding='utf-8') 
+    json_data = file_json.read()
+    data = jsloads(json_data)
+    filename=data['imagePath']
+    classes, xmin, ymin, xmax, ymax = [],[],[],[],[]
+    for i in range(len(data['shapes'])):
+        classes.append(data['shapes'][i]['label'])
+        xmin.append(data['shapes'][i]['points'][0][0])
+        ymin.append(data['shapes'][i]['points'][0][1])
+        xmax.append(data['shapes'][i]['points'][1][0])
+        ymax.append(data['shapes'][i]['points'][1][1])
+    box_info = npstack([classes,xmin,ymin,xmax,ymax],axis=1)
+    file_json.close()
+    return [filename,box_info]
+def return_bboxImg(img, bbox_array):
+    x1 = min(int(float(bbox_array[1])),int(float(bbox_array[3])))
+    y1 = min(int(float(bbox_array[2])),int(float(bbox_array[4])))
+    x2 = max(int(float(bbox_array[1])),int(float(bbox_array[3])))
+    y2 = max(int(float(bbox_array[2])),int(float(bbox_array[4])))
+    bbox = img[y1:y2,x1:x2,:]        
+    return bbox
+
+def dump_json(json_path,box_id,class_id):
+    try:
+        file_json = iopen(json_path, 'r',encoding='utf-8')
+    except:
+        print(f"Json file missing : {json_path}")
+        return False
+    # copyfile(json_path, ospath.dirname(ospath.dirname(json_path))+"/json_backup/"+ospath.basename(ospath.dirname(json_path))+"_"+ospath.basename(json_path))
+    json_data = file_json.read()
+    data = jsloads(json_data)
+    data['shapes'][int(box_id)]['label'] = class_id
+    with open(json_path, 'w') as f:
+        jsdump(data, f, indent=4)
+    file_json.close()
+    return True
+    
 class mainProgram(QMainWindow, Ui_MainWindow):
     keyPressed = pyqtSignal(QEvent)
     def __init__(self, parent=None):
         super(mainProgram, self).__init__(parent)
         self.setupUi(self)
-        self.saveButton.clicked.connect(self.save)
-        self.prevButton.clicked.connect(self.prev_image)
+        self.clipButton.clicked.connect(self.clip_by_path)
+        self.MergeButton.clicked.connect(self.merge_2_json)
         self.pathButton.clicked.connect(self.select_path)
+        self.prevButton.clicked.connect(self.prev_image)
+        self.saveButton.clicked.connect(self.save)
         self.keyPressed.connect(self.on_key)
         self.path_click=False
         
@@ -46,8 +91,70 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             sys.exit(app.exec_())
         else:
             return nparray(imopen(path))      
-
-
+        
+    def merge_2_json(self):
+        path = QFileDialog.getExistingDirectory(caption = '選擇ClippedBBox資料夾')
+        json_list = glob(ospath.join(ospath.dirname(path),"*.json"))
+        json_img_list = []
+        for i in json_list:
+            img_path = ospath.join(ospath.dirname(i),ospath.basename(i).replace(".json","")+".*")
+            json_img_list.extend(glob(img_path))
+        if len(json_list)!=0 and int(len(json_list)*2)==len(json_img_list):
+            ClippedBBox_loc = "children"
+        else:
+            ClippedBBox_loc = "parent"
+        print(ClippedBBox_loc)
+        if ospath.basename(path)!="ClippedBBox":
+            QMessageBox.information(self, "Warning", f"不正確的路徑，請選擇ClippedBBox資料夾")
+        else:
+            box_list = glob(path+"/**/*.jpg",recursive=True)
+            json_out = []
+            for i in box_list:
+                class_ = ospath.basename(ospath.dirname(i))
+                split_name = ospath.basename(i).split("-")
+                dataset_name = split_name[0]
+                image_name = split_name[1]
+                box_id = split_name[2].split(".")[0]
+                if ClippedBBox_loc == 'parent':
+                    json_path = ospath.join(ospath.dirname(path),dataset_name,image_name+".json")
+                elif ClippedBBox_loc=="children":
+                    json_path = ospath.join(ospath.dirname(path),image_name+".json")
+                #if not ospath.exists("./json_backup"):
+                #    makedirs("./json_backup")
+                json_out_temp = dump_json(json_path,box_id,class_)
+                json_out.append(json_out_temp)
+            QMessageBox.information(self, "Warning", f"合併完成，Json讀取共{json_out.count(True)}個成功，{json_out.count(False)}個失敗")
+        
+    def clip_by_path(self):
+        path = QFileDialog.getExistingDirectory()
+        json_list = glob(path+"/*/*.json",recursive=True)
+        if len(json_list)==0:
+            json_list = glob(path+"/*.json",recursive=True)    
+        if len(path) == 0:
+            QMessageBox.information(self,"Warning", "Please select a valid path!")
+        elif len(json_list)==0:
+            QMessageBox.information(self,"Warning", "沒有找到任何Json檔")
+        else:
+            if not ospath.exists(path+'/ClippedBBox'):
+                makedirs(path+'/ClippedBBox')        
+            missing_count = 0
+            success_count = 0
+            for i in json_list:
+                try:
+                    dataset_name = ospath.basename(ospath.dirname(i))
+                    json_content = read_labelme_json(i)
+                    img_path = ospath.join(ospath.dirname(i),json_content[0])
+                    img = nparray(imopen(img_path))
+                    for count,b in enumerate(json_content[1]):
+                        if not ospath.exists(path+'/ClippedBBox/'+b[0]):
+                            makedirs(path+'/ClippedBBox/'+b[0])
+                        cropped_box = imfromarray(return_bboxImg(img,b))
+                        cropped_box.save(path+"/ClippedBBox/"+b[0]+"/"+dataset_name+"-"+json_content[0].split(".")[0]+"-"+str(count)+".jpg","JPEG")
+                    success_count+=1
+                except:
+                    missing_count += 1
+            QMessageBox.information(self, "Warning", f"裁剪完成，Json讀取共{success_count}個成功，{missing_count}個失敗")
+                
     def save(self):
         if not self.path_click:
             QMessageBox.information(self, "Warning", "Please select folder first!")
@@ -80,7 +187,7 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             QMessageBox.information(self,"Warning", "Please select a valid path!")
         else:
             chdir(path)
-            self.image_list = glob('*.jpg')
+            self.image_list = glob('./*.jpg')
             if len(self.image_list)==0:
                 QMessageBox.information(self,"Warning", "No jpg images found!")
             else:
