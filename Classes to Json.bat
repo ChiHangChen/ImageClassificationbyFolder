@@ -13,8 +13,8 @@ import os, glob, shutil, io
 from PIL import Image
 import json
 import matplotlib.pyplot as plt
-import cv2
 from IPython.display import clear_output
+from shutil import copyfile
 
 def dump_json(json_path,box_id,class_id):
     try:
@@ -22,6 +22,7 @@ def dump_json(json_path,box_id,class_id):
     except:
         print(f"Json file missing : {json_path}")
         return False
+    copyfile(json_path, os.path.dirname(os.path.dirname(json_path))+"/json_backup/"+os.path.basename(json_path))
     json_data = file_json.read()
     data = json.loads(json_data)
     data['shapes'][int(box_id)]['label'] = class_id
@@ -40,5 +41,7 @@ for count,i in enumerate(box_list):
     image_name = split_name[1]
     box_id = split_name[2].split(".")[0]
     json_path = "./"+dataset_name+"/"+image_name+".json"
+    if not os.path.exists("./json_backup"):
+        os.makedirs("./json_backup")
     dump_json(json_path,box_id,class_)
 print("完成!")

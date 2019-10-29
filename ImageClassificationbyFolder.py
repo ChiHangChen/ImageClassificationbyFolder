@@ -10,7 +10,7 @@ from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import Qt, pyqtSignal, QEvent
 import sys
 from glob import glob
-import numpy as np
+from numpy import array as nparray
 from PIL.Image import open as imopen
 from win32gui import GetWindowText, GetForegroundWindow
 from MainWindow import Ui_MainWindow, resource_path
@@ -45,7 +45,7 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, "Warning", f"No image found : {path}")
             sys.exit(app.exec_())
         else:
-            return np.array(imopen(path))      
+            return nparray(imopen(path))      
 
 
     def save(self):
