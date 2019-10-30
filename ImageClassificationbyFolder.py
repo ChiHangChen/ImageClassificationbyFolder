@@ -28,10 +28,10 @@ keymap = {}
 for key, value in vars(Qt).items():
     if isinstance(value, Qt.Key):
         temp = key.partition('_')[2]
-        if len(temp)==1:
+        if len(temp)==1 or temp=='Backspace':
             keymap[value] = temp 
             
-
+ext_types = ('./*.jpg', './*.jpeg','./*.JPG','./*.JPEG','./*.png','./*.PNG','./*.bmp','./*.BMP')
 desired_window = "Quick Classification"
 
 def read_labelme_json(json_path):
@@ -167,7 +167,9 @@ class mainProgram(QMainWindow, Ui_MainWindow):
                     makedirs(output_path)
                 move(im, output_path+"/"+ospath.basename(im))
             
-            self.image_list = glob('*.jpg')
+            self.image_list = []
+            for files in ext_types:
+                 self.image_list.extend(glob(files))
             self.imgnumber = 0
             self.new_class = []
             self.done_img_list = []
@@ -187,10 +189,9 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             QMessageBox.information(self,"Warning", "Please select a valid path!")
         else:
             chdir(path)
-            types = ('./*.jpg', './*.jpeg','./*.JPG','./*.JPEG','./*.png','./*.PNG','./*.bmp','./*.BMP') # the tuple of file types
-            self.image_lis = []
-            for files in types:
-                 self.image_lis.extend(glob(files))
+            self.image_list = []
+            for files in ext_types:
+                 self.image_list.extend(glob(files))
             if len(self.image_list)==0:
                 QMessageBox.information(self,"Warning", "No images found!")
             else:
@@ -227,18 +228,21 @@ class mainProgram(QMainWindow, Ui_MainWindow):
         current_window = GetWindowText(GetForegroundWindow())
         if current_window==desired_window:
             if event.key() in keymap:
-                self.new_class.append(keymap[event.key()])
-                self.done_img_list.append(self.image_list[self.imgnumber])
-                
-                self.imgnumber += 1
-                
-                # If to the end, save and close program
-                if self.imgnumber==len(self.image_list):
-                    self.to_the_end = True
-                    self.save()
+                if keymap[event.key()]=='Backspace':
+                    self.prev_image()
                 else:
-                    bbox = self.read_img(self.image_list[self.imgnumber])
-                    self.update_image(bbox)
+                    self.new_class.append(keymap[event.key()])
+                    self.done_img_list.append(self.image_list[self.imgnumber])
+                    
+                    self.imgnumber += 1
+                    
+                    # If to the end, save and close program
+                    if self.imgnumber==len(self.image_list):
+                        self.to_the_end = True
+                        self.save()
+                    else:
+                        bbox = self.read_img(self.image_list[self.imgnumber])
+                        self.update_image(bbox)
             else:
                 QMessageBox.information(self,"Warning", "Can not press special keys!")
                 
