@@ -8,7 +8,7 @@ This is a temporary script file.
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QApplication, QFileDialog
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import Qt, pyqtSignal, QEvent
-import sys
+from sys import argv, exit
 from glob import glob
 from numpy import array as nparray
 from numpy import stack as npstack
@@ -101,9 +101,9 @@ class mainProgram(QMainWindow, Ui_MainWindow):
     def read_img(self, path):
         if not ospath.exists(path):
             QMessageBox.information(self, "Warning", f"No image found : {path}")
-            sys.exit(app.exec_())
+            exit(app.exec_())
         else:
-            return nparray(imopen(path))      
+            return nparray(imopen(path))
     
     # this function is for merging clipped bounding box which is already classified by folder back to labelme json format        
     def merge_2_json(self):
@@ -159,7 +159,7 @@ class mainProgram(QMainWindow, Ui_MainWindow):
                     dataset_name = ospath.basename(ospath.dirname(i))
                     json_content = read_labelme_json(i)
                     img_path = ospath.join(ospath.dirname(i),json_content[0])
-                    img = nparray(imopen(img_path))
+                    img = self.read_img(img_path)
                     for count,b in enumerate(json_content[1]):
                         if not ospath.exists(path+'/ClippedBBox/'+b[0]):
                             makedirs(path+'/ClippedBBox/'+b[0])
@@ -189,7 +189,7 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             self.done_img_list = []
             if self.to_the_end:
                 QMessageBox.information(self, "Warning", "Job Done!")
-                sys.exit(app.exec_())
+                exit(app.exec_())
             else:
                 bbox = self.read_img(self.image_list[self.imgnumber])
                 self.update_image(bbox)            
@@ -224,13 +224,13 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             try : 
                 split_imgName = self.image_list[self.imgnumber].split("-")
                 text = ""
-                text += f"Dataset name : {split_imgName[0]}"
-                text += f"\nImage name : {split_imgName[1]}.jpg"
-                text += f"\nBBox id : {split_imgName[2].replace('.jpg','')}"
+                text += f" Dataset name : {split_imgName[0]}"
+                text += f"\n Image name : {split_imgName[1]}.jpg"
+                text += f"\n BBox id : {split_imgName[2].replace('.jpg','')}"
             except:
-                text = "Filename : "+self.image_list[self.imgnumber]
-            text += "\n\n"+f"Current progress : {self.imgnumber+1}/{len(self.image_list)}"
-            text += f"\n{self.imgnumber} images haven't been saved"
+                text = " Filename : "+ospath.basename(self.image_list[self.imgnumber])
+            text += "\n\n"+f" Current progress : {self.imgnumber+1}/{len(self.image_list)}"
+            text += f"\n {self.imgnumber} images haven't been saved"
             self.text_qlabel.setText(text)
     
     # when user press any keys will trigger this function        
@@ -274,11 +274,11 @@ class mainProgram(QMainWindow, Ui_MainWindow):
         
         
 if __name__ == '__main__':  
-    app = QApplication(sys.argv)
+    app = QApplication(argv)
     app.setWindowIcon(QIcon(resource_path('main.ico')))
     main = mainProgram()
     main.show()
-    sys.exit(app.exec_())
+    exit(app.exec_())
     
  
 

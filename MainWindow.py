@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 
-from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QStatusBar
+from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QStatusBar, QScrollArea
 from PyQt5.QtCore import QRect, Qt, QSize, QMetaObject, QCoreApplication
 from PyQt5.QtGui import QFont, QIcon, QPixmap
 import sys
@@ -25,7 +25,6 @@ class Ui_MainWindow(object):
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         
-        
         self.img_qlabel = QLabel(self.centralwidget)
         self.img_qlabel.setFont(QFont("Roman times",15,QFont.Bold))
         self.img_qlabel.setGeometry(QRect(20, 20, 405, 551))
@@ -35,9 +34,14 @@ class Ui_MainWindow(object):
         
         self.text_qlabel = QLabel(self.centralwidget)
         self.text_qlabel.setFont(QFont("Roman times",12,QFont.Bold))
-        self.text_qlabel.setGeometry(QRect(440, 20, 350, 190))
+        self.text_qlabel.setGeometry(QRect(0, 0, 800, 190))
         self.text_qlabel.setStyleSheet("background: white; color: rgb(121, 121, 121)")
         self.text_qlabel.setObjectName("text_qlabel")
+        self.text_qlabel.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        
+        self.scroll = QScrollArea(self.centralwidget)
+        self.scroll.setGeometry(QRect(440, 20, 350, 190))
+        self.scroll.setWidget(self.text_qlabel)
 
         self.clipButton = QPushButton(self.centralwidget)
         self.clipButton.setGeometry(QRect(450, 220, 160, 75))
