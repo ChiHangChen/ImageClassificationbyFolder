@@ -12,6 +12,7 @@ import sys
 from glob import glob
 from numpy import array as nparray
 from numpy import stack as npstack
+from numpy import unique as npunique
 from PIL.Image import open as imopen
 from PIL.Image import fromarray as imfromarray
 from win32gui import GetWindowText, GetForegroundWindow
@@ -31,9 +32,9 @@ for key, value in vars(Qt).items():
         if len(temp)==1 or temp=='Backspace':
             keymap[value] = temp 
             
-ext_types = ('./*.jpg', './*.jpeg','./*.JPG','./*.JPEG','./*.png','./*.PNG','./*.bmp','./*.BMP')
 desired_window = "Quick Classification"
 
+# This function is for reading labelme annotation json format
 def read_labelme_json(json_path):
     file_json = iopen(json_path,'r',encoding='utf-8') 
     json_data = file_json.read()
@@ -49,6 +50,8 @@ def read_labelme_json(json_path):
     box_info = npstack([classes,xmin,ymin,xmax,ymax],axis=1)
     file_json.close()
     return [filename,box_info]
+
+# this function is to crop bounding box image given an image an its annotation
 def return_bboxImg(img, bbox_array):
     x1 = min(int(float(bbox_array[1])),int(float(bbox_array[3])))
     y1 = min(int(float(bbox_array[2])),int(float(bbox_array[4])))
@@ -57,6 +60,7 @@ def return_bboxImg(img, bbox_array):
     bbox = img[y1:y2,x1:x2,:]        
     return bbox
 
+# this function is for merging boudning box class back to orginal json file
 def dump_json(json_path,box_id,class_id):
     try:
         file_json = iopen(json_path, 'r',encoding='utf-8')
@@ -71,7 +75,15 @@ def dump_json(json_path,box_id,class_id):
         jsdump(data, f, indent=4)
     file_json.close()
     return True
-    
+
+def list_all_type_of_image():
+    ext_types = ('./*.jpg', './*.jpeg','./*.JPG','./*.JPEG','./*.png','./*.PNG','./*.bmp','./*.BMP')
+    image_list = []
+    for files in ext_types:
+         image_list.extend(glob(files))
+    image_list = npunique(image_list)    
+    return image_list
+
 class mainProgram(QMainWindow, Ui_MainWindow):
     keyPressed = pyqtSignal(QEvent)
     def __init__(self, parent=None):
@@ -84,14 +96,16 @@ class mainProgram(QMainWindow, Ui_MainWindow):
         self.saveButton.clicked.connect(self.save)
         self.keyPressed.connect(self.on_key)
         self.path_click=False
-        
+    
+    # this function is for reading image using pillow package
     def read_img(self, path):
         if not ospath.exists(path):
             QMessageBox.information(self, "Warning", f"No image found : {path}")
             sys.exit(app.exec_())
         else:
             return nparray(imopen(path))      
-        
+    
+    # this function is for merging clipped bounding box which is already classified by folder back to labelme json format        
     def merge_2_json(self):
         path = QFileDialog.getExistingDirectory(caption = '選擇ClippedBBox資料夾')
         json_list = glob(ospath.join(ospath.dirname(path),"*.json"))
@@ -124,7 +138,8 @@ class mainProgram(QMainWindow, Ui_MainWindow):
                 json_out_temp = dump_json(json_path,box_id,class_)
                 json_out.append(json_out_temp)
             QMessageBox.information(self, "Warning", f"合併完成，Json讀取共{json_out.count(True)}個成功，{json_out.count(False)}個失敗")
-        
+     
+    # this function is for clipping bounding box and save into ClippedBBox folder with specific file name which can merge back to labelme json format after classified by folder    
     def clip_by_path(self):
         path = QFileDialog.getExistingDirectory()
         json_list = glob(path+"/*/*.json",recursive=True)
@@ -154,7 +169,8 @@ class mainProgram(QMainWindow, Ui_MainWindow):
                 except:
                     missing_count += 1
             QMessageBox.information(self, "Warning", f"裁剪完成，Json讀取共{success_count}個成功，{missing_count}個失敗")
-                
+            
+    # this function is for saveing current classification progress
     def save(self):
         if not self.path_click:
             QMessageBox.information(self, "Warning", "Please select folder first!")
@@ -165,11 +181,9 @@ class mainProgram(QMainWindow, Ui_MainWindow):
                 output_path = ospath.dirname(getcwd())+"/"+c
                 if not ospath.exists(output_path):
                     makedirs(output_path)
-                move(im, output_path+"/"+ospath.basename(im))
+                move(im, ospath.join(output_path,ospath.basename(im)))
             
-            self.image_list = []
-            for files in ext_types:
-                 self.image_list.extend(glob(files))
+            self.image_list = list_all_type_of_image()
             self.imgnumber = 0
             self.new_class = []
             self.done_img_list = []
@@ -181,7 +195,7 @@ class mainProgram(QMainWindow, Ui_MainWindow):
                 self.update_image(bbox)            
                 QMessageBox.information(self, "Warning", "Image saved!")
             
-    # Done
+    # this function is for select image folder which is wait to be classified
     def select_path(self):
         path = QFileDialog.getExistingDirectory()
         self.to_the_end = False
@@ -189,9 +203,7 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             QMessageBox.information(self,"Warning", "Please select a valid path!")
         else:
             chdir(path)
-            self.image_list = []
-            for files in ext_types:
-                 self.image_list.extend(glob(files))
+            self.image_list = list_all_type_of_image()
             if len(self.image_list)==0:
                 QMessageBox.information(self,"Warning", "No images found!")
             else:
@@ -201,7 +213,8 @@ class mainProgram(QMainWindow, Ui_MainWindow):
                 self.path_click = True
                 bbox = self.read_img(self.image_list[self.imgnumber])
                 self.update_image(bbox)
-        
+    
+    # this function is for update current window to the next image after user click classification button
     def update_image(self, bbox):
         qImg = array2qimage(bbox)
         pixmap = QPixmap(qImg)
@@ -219,11 +232,12 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             text += "\n\n"+f"Current progress : {self.imgnumber+1}/{len(self.image_list)}"
             text += f"\n{self.imgnumber} images haven't been saved"
             self.text_qlabel.setText(text)
-            
+    
+    # when user press any keys will trigger this function        
     def keyPressEvent(self, event):
         super(mainProgram, self).keyPressEvent(event)
         self.keyPressed.emit(event) 
-            
+    # when user press any keys will trigger this function           
     def on_key(self, event):
         current_window = GetWindowText(GetForegroundWindow())
         if current_window==desired_window:
@@ -246,6 +260,7 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             else:
                 QMessageBox.information(self,"Warning", "Can not press special keys!")
                 
+    # when user click previous button or 'Backspace' on keyboard will trigger this function to go back to previous image
     def prev_image(self):
         if self.imgnumber==0:
             QMessageBox.information(self,"Warning", "No previous image!")
