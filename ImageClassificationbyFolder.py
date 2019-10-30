@@ -17,7 +17,7 @@ from PIL.Image import fromarray as imfromarray
 from win32gui import GetWindowText, GetForegroundWindow
 from MainWindow import Ui_MainWindow, resource_path
 from qimage2ndarray import array2qimage
-from shutil import move, copyfile
+from shutil import move
 from os import makedirs, chdir, getcwd
 from os import path as ospath
 from io import open as iopen
@@ -187,9 +187,12 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             QMessageBox.information(self,"Warning", "Please select a valid path!")
         else:
             chdir(path)
-            self.image_list = glob('./*.jpg')
+            types = ('./*.jpg', './*.jpeg','./*.JPG','./*.JPEG','./*.png','./*.PNG','./*.bmp','./*.BMP') # the tuple of file types
+            self.image_lis = []
+            for files in types:
+                 self.image_lis.extend(glob(files))
             if len(self.image_list)==0:
-                QMessageBox.information(self,"Warning", "No jpg images found!")
+                QMessageBox.information(self,"Warning", "No images found!")
             else:
                 self.imgnumber = 0
                 self.new_class = []
