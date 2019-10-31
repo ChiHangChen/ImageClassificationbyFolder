@@ -8,7 +8,7 @@ This tool can classify each image into its classes folder by a simply press on t
 
 Bounding box with **[labelme](https://github.com/wkentaro/labelme)** json annotation format can be quickly clipped and classified.
 
-You can use **Clipped to BBox** button to crop the bounding box image from the **labelme** format annotation, do the classification, and merge back to annotation json files. with **Merge to Json** button.
+You can use **Clip to BBox** button to crop the bounding box image from the **labelme** format annotation, do the classification, and merge back to annotation json files. with **Merge to Json** button.
 
 **Usage**
 <p align="center">
@@ -21,6 +21,6 @@ The exe file can be downloaded from **[here](https://github.com/ChiHangChen/Imag
 
 1. Press `Save` button for saving classified images into different folder.
 
-2. The originial image annotaions must saved as the same as **[labelme](https://github.com/wkentaro/labelme)** json format, then **Clipped to BBox** button is available to clip boudning box from origianl images.
+2. The originial image annotaions must saved as the same as **[labelme](https://github.com/wkentaro/labelme)** json format, then **Clip to BBox** button is available to clip boudning box from origianl images.
 
 
