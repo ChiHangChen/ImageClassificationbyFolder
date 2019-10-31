@@ -104,3 +104,24 @@ class Ui_MainWindow(object):
         self.pathButton.setText(_translate("MainWindow", "Open Dir"))
         self.prevButton.setText(_translate("MainWindow", "Previous"))
         self.saveButton.setText(_translate("MainWindow", "Save"))
+
+from PyQt5.QtWidgets import QDialog,QProgressBar
+
+class progressWindow(QDialog):
+    def __init__(self,bar_len,title):
+        super().__init__()
+        self.bar_len = bar_len
+        self.initUI()
+        self.setWindowTitle(title)
+        
+    def initUI(self):
+        self.progress = QProgressBar(self)
+        self.progress.setGeometry(0, 0, 300, 25)
+        self.progress.setMaximum(self.bar_len)
+        self.show()
+        
+    def set_progress_value(self,value):
+        self.progress.setValue(value)
+        
+        
+        

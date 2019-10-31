@@ -16,7 +16,7 @@ from numpy import unique as npunique
 from PIL.Image import open as imopen
 from PIL.Image import fromarray as imfromarray
 from win32gui import GetWindowText, GetForegroundWindow
-from MainWindow import Ui_MainWindow, resource_path
+from MainWindow import Ui_MainWindow, resource_path, progressWindow
 from qimage2ndarray import array2qimage
 from shutil import move
 from os import makedirs, chdir, getcwd
@@ -104,9 +104,9 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             exit(app.exec_())
         else:
             return nparray(imopen(path))
-    
     # this function is for merging clipped bounding box which is already classified by folder back to labelme json format        
     def merge_2_json(self):
+        print("合併至Json")
         path = QFileDialog.getExistingDirectory(caption = '選擇ClippedBBox資料夾')
         json_list = glob(ospath.join(ospath.dirname(path),"*.json"))
         json_img_list = []
@@ -117,13 +117,15 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             ClippedBBox_loc = "children"
         else:
             ClippedBBox_loc = "parent"
-        print(ClippedBBox_loc)
         if ospath.basename(path)!="ClippedBBox":
             QMessageBox.information(self, "Warning", f"不正確的路徑，請選擇ClippedBBox資料夾")
         else:
             box_list = glob(path+"/**/*.jpg",recursive=True)
             json_out = []
-            for i in box_list:
+            progress_window = progressWindow(len(box_list),'正在合併回Json...')
+            for j,i in enumerate(box_list):
+                progress_window.set_progress_value(j+1)
+                QApplication.processEvents()
                 class_ = ospath.basename(ospath.dirname(i))
                 split_name = ospath.basename(i).split("-")
                 dataset_name = split_name[0]
@@ -141,6 +143,7 @@ class mainProgram(QMainWindow, Ui_MainWindow):
      
     # this function is for clipping bounding box and save into ClippedBBox folder with specific file name which can merge back to labelme json format after classified by folder    
     def clip_by_path(self):
+        print("裁剪BoundingBox")
         path = QFileDialog.getExistingDirectory()
         json_list = glob(path+"/*/*.json",recursive=True)
         if len(json_list)==0:
@@ -154,7 +157,10 @@ class mainProgram(QMainWindow, Ui_MainWindow):
                 makedirs(path+'/ClippedBBox')        
             missing_count = 0
             success_count = 0
-            for i in json_list:
+            progress_window = progressWindow(len(json_list),'正在裁剪Bounding Box...')
+            for j,i in enumerate(json_list):
+                progress_window.set_progress_value(j+1)
+                QApplication.processEvents()
                 try:
                     dataset_name = ospath.basename(ospath.dirname(i))
                     json_content = read_labelme_json(i)
