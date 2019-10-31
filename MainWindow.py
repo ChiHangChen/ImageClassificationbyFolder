@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 
-from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QStatusBar, QScrollArea
+from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QStatusBar, QScrollArea, QDialog,QProgressBar
 from PyQt5.QtCore import QRect, Qt, QSize, QMetaObject, QCoreApplication
 from PyQt5.QtGui import QFont, QIcon, QPixmap
 import sys
@@ -104,8 +104,6 @@ class Ui_MainWindow(object):
         self.pathButton.setText(_translate("MainWindow", "Open Dir"))
         self.prevButton.setText(_translate("MainWindow", "Previous"))
         self.saveButton.setText(_translate("MainWindow", "Save"))
-
-from PyQt5.QtWidgets import QDialog,QProgressBar
 
 class progressWindow(QDialog):
     def __init__(self,bar_len,title):
