@@ -77,7 +77,7 @@ def dump_json(json_path,box_id,class_id):
     return True
 
 def list_all_type_of_image():
-    ext_types = ('./*.jpg', './*.jpeg','./*.JPG','./*.JPEG','./*.png','./*.PNG','./*.bmp','./*.BMP')
+    ext_types = ('./*.jpg', './*.jpeg','./*.png','./*.bmp')
     image_list = []
     for files in ext_types:
          image_list.extend(glob(files))
