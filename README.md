@@ -6,6 +6,8 @@ A labeling tool for quick image classification.
 
 This tool can classify each image into its classes folder by a simply press on the keyboard.
 
+Bounding box with **[labelme](https://github.com/wkentaro/labelme)** json annotation format can be quickly clipped and classified.
+
 **Usage**
 <p align="center">
   <img src="img/demo.gif" width = "1000" height = "500" border="5">
