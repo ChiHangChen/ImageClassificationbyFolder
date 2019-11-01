@@ -8,7 +8,7 @@ This tool can classify each image into its classes folder by a simply press on t
 
 Bounding box with **[labelme](https://github.com/wkentaro/labelme)** json annotation format can be quickly clipped and classified.
 
-You can use **Clip to BBox** button to crop the bounding box image from the **labelme** format annotation, do the classification, and merge back to annotation json files. with **Merge to Json** button.
+You can use **Clip2BBox** button to crop the bounding box image from the **labelme** format annotation, do the classification, and merge back to annotation json files with **Merge2Json** button.
 
 **Usage**
 <p align="center">

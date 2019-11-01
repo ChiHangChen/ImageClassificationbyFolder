@@ -9,21 +9,17 @@ from PyQt5.QtWidgets import QMainWindow, QMessageBox, QApplication, QFileDialog
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import Qt, pyqtSignal, QEvent
 from sys import argv, exit
-from glob import glob
 from numpy import array as nparray
-from numpy import stack as npstack
-from numpy import unique as npunique
 from PIL.Image import open as imopen
 from PIL.Image import fromarray as imfromarray
 from win32gui import GetWindowText, GetForegroundWindow
-from MainWindow import Ui_MainWindow, resource_path, progressWindow
 from qimage2ndarray import array2qimage
 from shutil import move
 from os import makedirs, chdir, getcwd
 from os import path as ospath
-from io import open as iopen
-from json import loads as jsloads
-from json import dump as jsdump
+from utils import read_labelme_json, return_bboxImg, dump_json, list_all_type_of_image, resize_widget, resize_font, resize_icon
+from MainWindow import resource_path, Ui_MainWindow, progressWindow
+from glob import glob
 
 keymap = {}
 for key, value in vars(Qt).items():
@@ -34,55 +30,7 @@ for key, value in vars(Qt).items():
             
 desired_window = "Quick Classification"
 
-# This function is for reading labelme annotation json format
-def read_labelme_json(json_path):
-    file_json = iopen(json_path,'r',encoding='utf-8') 
-    json_data = file_json.read()
-    data = jsloads(json_data)
-    filename=data['imagePath']
-    classes, xmin, ymin, xmax, ymax = [],[],[],[],[]
-    for i in range(len(data['shapes'])):
-        classes.append(data['shapes'][i]['label'])
-        xmin.append(data['shapes'][i]['points'][0][0])
-        ymin.append(data['shapes'][i]['points'][0][1])
-        xmax.append(data['shapes'][i]['points'][1][0])
-        ymax.append(data['shapes'][i]['points'][1][1])
-    box_info = npstack([classes,xmin,ymin,xmax,ymax],axis=1)
-    file_json.close()
-    return [filename,box_info]
 
-# this function is to crop bounding box image given an image an its annotation
-def return_bboxImg(img, bbox_array):
-    x1 = min(int(float(bbox_array[1])),int(float(bbox_array[3])))
-    y1 = min(int(float(bbox_array[2])),int(float(bbox_array[4])))
-    x2 = max(int(float(bbox_array[1])),int(float(bbox_array[3])))
-    y2 = max(int(float(bbox_array[2])),int(float(bbox_array[4])))
-    bbox = img[y1:y2,x1:x2,:]        
-    return bbox
-
-# this function is for merging boudning box class back to orginal json file
-def dump_json(json_path,box_id,class_id):
-    try:
-        file_json = iopen(json_path, 'r',encoding='utf-8')
-    except:
-        print(f"Json file missing : {json_path}")
-        return False
-    # copyfile(json_path, ospath.dirname(ospath.dirname(json_path))+"/json_backup/"+ospath.basename(ospath.dirname(json_path))+"_"+ospath.basename(json_path))
-    json_data = file_json.read()
-    data = jsloads(json_data)
-    data['shapes'][int(box_id)]['label'] = class_id
-    with open(json_path, 'w') as f:
-        jsdump(data, f, indent=4)
-    file_json.close()
-    return True
-
-def list_all_type_of_image():
-    ext_types = ('./*.jpg', './*.jpeg','./*.png','./*.bmp')
-    image_list = []
-    for files in ext_types:
-         image_list.extend(glob(files))
-    image_list = npunique(image_list)    
-    return image_list
 
 class mainProgram(QMainWindow, Ui_MainWindow):
     keyPressed = pyqtSignal(QEvent)
@@ -96,7 +44,24 @@ class mainProgram(QMainWindow, Ui_MainWindow):
         self.saveButton.clicked.connect(self.save)
         self.keyPressed.connect(self.on_key)
         self.path_click=False
-    
+        
+    # If user resize mainwindow, then keep the button position    
+    def resizeEvent(self, event):
+        for i in [self.img_qlabel, self.text_qlabel, self.scroll, self.clipButton, self.MergeButton, self.separate_line, self.pathButton, self.prevButton, self.saveButton]:
+            resize_widget(i, self.rect().width(), self.rect().height())
+        for i in [self.img_qlabel, self.text_qlabel, self.clipButton, self.MergeButton, self.pathButton, self.prevButton, self.saveButton]:
+            resize_font(i, self.rect().width(), self.rect().height())
+        for i in [self.clipButton, self.MergeButton, self.pathButton, self.prevButton, self.saveButton]:
+            resize_icon(i, self.rect().width(), self.rect().height())
+        
+        try:
+            bbox = self.read_img(self.image_list[self.imgnumber])
+            self.update_image(bbox)
+        except:
+            pass
+            
+        QMainWindow.resizeEvent(self, event)
+        
     # this function is for reading image using pillow package
     def read_img(self, path):
         if not ospath.exists(path):
@@ -135,8 +100,6 @@ class mainProgram(QMainWindow, Ui_MainWindow):
                     json_path = ospath.join(ospath.dirname(path),dataset_name,image_name+".json")
                 elif ClippedBBox_loc=="children":
                     json_path = ospath.join(ospath.dirname(path),image_name+".json")
-                #if not ospath.exists("./json_backup"):
-                #    makedirs("./json_backup")
                 json_out_temp = dump_json(json_path,box_id,class_)
                 json_out.append(json_out_temp)
             QMessageBox.information(self, "Warning", f"合併完成，Json讀取共{json_out.count(True)}個成功，{json_out.count(False)}個失敗")
@@ -178,6 +141,7 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             
     # this function is for saveing current classification progress
     def save(self):
+        print("存檔中...")
         if not self.path_click:
             QMessageBox.information(self, "Warning", "Please select folder first!")
         elif len(self.new_class)==0:
@@ -203,6 +167,7 @@ class mainProgram(QMainWindow, Ui_MainWindow):
             
     # this function is for select image folder which is wait to be classified
     def select_path(self):
+        print("選擇圖片路徑")
         path = QFileDialog.getExistingDirectory()
         self.to_the_end = False
         if len(path) == 0:
@@ -225,12 +190,12 @@ class mainProgram(QMainWindow, Ui_MainWindow):
         qImg = array2qimage(bbox)
         pixmap = QPixmap(qImg)
         if not pixmap.isNull():
-            pixmap = pixmap.scaled(225, 450, Qt.KeepAspectRatio)
+            pixmap = pixmap.scaled(self.img_qlabel.width(), self.img_qlabel.height(), Qt.KeepAspectRatio)
             self.img_qlabel.setPixmap(pixmap)
             try : 
                 split_imgName = self.image_list[self.imgnumber].split("-")
                 text = ""
-                text += f" Dataset name : {split_imgName[0]}"
+                text += f" Dataset name : {ospath.basename(split_imgName[0])}"
                 text += f"\n Image name : {split_imgName[1]}.jpg"
                 text += f"\n BBox id : {split_imgName[2].replace('.jpg','')}"
             except:
@@ -268,6 +233,7 @@ class mainProgram(QMainWindow, Ui_MainWindow):
                 
     # when user click previous button or 'Backspace' on keyboard will trigger this function to go back to previous image
     def prev_image(self):
+        print("返回上一張圖片")
         if self.imgnumber==0:
             QMessageBox.information(self,"Warning", "No previous image!")
         else:
