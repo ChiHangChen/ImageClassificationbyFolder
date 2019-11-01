@@ -43,6 +43,7 @@ class mainProgram(QMainWindow, Ui_MainWindow):
         self.prevButton.clicked.connect(self.prev_image)
         self.saveButton.clicked.connect(self.save)
         self.keyPressed.connect(self.on_key)
+        self.setStyleSheet("QMessageBox { messagebox-text-interaction-flags: 5; }")
         self.path_click=False
         
     # If user resize mainwindow, then keep the button position    
@@ -85,24 +86,29 @@ class mainProgram(QMainWindow, Ui_MainWindow):
         if ospath.basename(path)!="ClippedBBox":
             QMessageBox.information(self, "Warning", f"不正確的路徑，請選擇ClippedBBox資料夾")
         else:
-            box_list = glob(path+"/**/*.jpg",recursive=True)
-            json_out = []
-            progress_window = progressWindow(len(box_list),'正在合併回Json...')
-            for j,i in enumerate(box_list):
-                progress_window.set_progress_value(j+1)
-                QApplication.processEvents()
-                class_ = ospath.basename(ospath.dirname(i))
-                split_name = ospath.basename(i).split("-")
-                dataset_name = split_name[0]
-                image_name = split_name[1]
-                box_id = split_name[2].split(".")[0]
-                if ClippedBBox_loc == 'parent':
-                    json_path = ospath.join(ospath.dirname(path),dataset_name,image_name+".json")
-                elif ClippedBBox_loc=="children":
-                    json_path = ospath.join(ospath.dirname(path),image_name+".json")
-                json_out_temp = dump_json(json_path,box_id,class_)
-                json_out.append(json_out_temp)
-            QMessageBox.information(self, "Warning", f"合併完成，Json讀取共{json_out.count(True)}個成功，{json_out.count(False)}個失敗")
+            reply = QMessageBox.question(self, 'Warning', 
+                             f'確定要將分類完成的Bounding Box類別覆蓋{ospath.dirname(path)}下的所有Json檔嗎?', QMessageBox.Yes, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                box_list = glob(path+"/**/*.jpg",recursive=True)
+                json_out = []
+                progress_window = progressWindow(len(box_list),'正在合併回Json...')
+                for j,i in enumerate(box_list):
+                    progress_window.set_progress_value(j+1)
+                    QApplication.processEvents()
+                    class_ = ospath.basename(ospath.dirname(i))
+                    split_name = ospath.basename(i).split("-")
+                    dataset_name = split_name[0]
+                    image_name = split_name[1]
+                    box_id = split_name[2].split(".")[0]
+                    if ClippedBBox_loc == 'parent':
+                        json_path = ospath.join(ospath.dirname(path),dataset_name,image_name+".json")
+                    elif ClippedBBox_loc=="children":
+                        json_path = ospath.join(ospath.dirname(path),image_name+".json")
+                    json_out_temp = dump_json(json_path,box_id,class_)
+                    json_out.append(json_out_temp)
+                QMessageBox.information(self, "Warning", f"合併完成，Json讀取共{json_out.count(True)}個成功，{json_out.count(False)}個失敗")
+            else:
+                QMessageBox.information(self, "Warning", f"使用者已取消")
      
     # this function is for clipping bounding box and save into ClippedBBox folder with specific file name which can merge back to labelme json format after classified by folder    
     def clip_by_path(self):
@@ -137,7 +143,7 @@ class mainProgram(QMainWindow, Ui_MainWindow):
                     success_count+=1
                 except:
                     missing_count += 1
-            QMessageBox.information(self, "Warning", f"裁剪完成，Json讀取共{success_count}個成功，{missing_count}個失敗")
+            QMessageBox.information(self, "Warning", f"裁剪完成，Json讀取共{success_count}個成功，{missing_count}個失敗\nBounding Box儲存於{path+'/ClippedBBox/'}")
             
     # this function is for saveing current classification progress
     def save(self):
