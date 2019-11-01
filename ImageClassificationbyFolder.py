@@ -153,7 +153,10 @@ class mainProgram(QMainWindow, Ui_MainWindow):
         elif len(self.new_class)==0:
             QMessageBox.information(self, "Warning", "No images need to be saved!")
         else:
-            for im, c in zip(self.done_img_list, self.new_class):
+            progress_window = progressWindow(len(self.done_img_list),'正在儲存...')
+            for j, (im, c) in enumerate(zip(self.done_img_list, self.new_class)):
+                progress_window.set_progress_value(j+1)
+                QApplication.processEvents()
                 output_path = ospath.dirname(getcwd())+"/"+c
                 if not ospath.exists(output_path):
                     makedirs(output_path)

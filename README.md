@@ -1,6 +1,6 @@
 # **Introduction**
 
-![version](https://img.shields.io/badge/version-3.2.0-blue)
+![version](https://img.shields.io/badge/version-3.4.2-blue)
 
 A labeling tool for quick image classification.
 
