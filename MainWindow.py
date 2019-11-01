@@ -110,7 +110,7 @@ class Ui_MainWindow(object):
         _translate = QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Quick Classification"))
         self.img_qlabel.setText(_translate("MainWindow", "Image Display"))
-        self.text_qlabel.setText(_translate("MainWindow", "Please select a folder"))
+        self.text_qlabel.setText(_translate("MainWindow", " Please select a folder"))
         self.clipButton.setText(_translate("MainWindow", "Clip2BBox"))
         self.MergeButton.setText(_translate("MainWindow", "Merge2Json"))
         self.pathButton.setText(_translate("MainWindow", "Open Dir"))
