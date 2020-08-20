@@ -1,0 +1,8 @@
+build
+dist
+pyinstaller.txt
+run.bat
+video.avi
+video.txt
+__pycache__
+.Rhistory

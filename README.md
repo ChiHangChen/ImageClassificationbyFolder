@@ -17,10 +17,13 @@ You can use **Clip2BBox** button to crop the bounding box image from the **label
 
 
 ## **Something you need to know**
-The exe file can be downloaded from **[here](https://github.com/ChiHangChen/ImageClassificationbyFolder/releases)**.
 
 1. Press `Save` button for saving classified images into different folder.
 
 2. The originial image annotaions must saved as the same as **[labelme](https://github.com/wkentaro/labelme)** json format, then **Clip to BBox** button is available to clip boudning box from origianl images.
 
+
+# Download
+
+The exe file can be downloaded from **[here](https://github.com/ChiHangChen/ImageClassificationbyFolder/releases)**.
 
